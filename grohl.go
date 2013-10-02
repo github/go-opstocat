@@ -5,11 +5,10 @@ import (
 	"github.com/peterbourgon/g2s"
 	"github.com/technoweenie/grohl"
 	"log/syslog"
+	"runtime"
 	"strings"
 	"time"
 )
-
-var periodicDuration, _ = time.ParseDuration("10s")
 
 func SetupLogger(config ConfigWrapper) {
 	innerconfig := config.OpstocatConfiguration()
@@ -50,6 +49,36 @@ func SetupLogger(config ConfigWrapper) {
 
 	go grohl.Watch(logger, logch)
 }
+
+func SendPeriodicStats(duration string, config ConfigWrapper, callback func(keyprefix string)) error {
+	innerconfig := config.OpstocatConfiguration()
+	if !innerconfig.ShowPeriodicStats() {
+		return nil
+	}
+
+	dur, err := time.ParseDuration(duration)
+	if err != nil {
+		return err
+	}
+
+	keyprefix := fmt.Sprintf("sys.%s.", innerconfig.Hostname)
+	if callback == nil {
+		callback = nopPeriodicCallback
+	}
+
+	go sendPeriodicStats(dur, keyprefix, callback)
+	return nil
+}
+
+func sendPeriodicStats(dur time.Duration, keyprefix string, callback func(keyprefix string)) {
+	for {
+		time.Sleep(dur)
+		grohl.Gauge(1.0, keyprefix+"goroutines", grohl.Format(runtime.NumGoroutine()))
+		callback(keyprefix)
+	}
+}
+
+func nopPeriodicCallback(keyprefix string) {}
 
 func PrefixedStatter(prefix string, statter g2s.Statter) g2s.Statter {
 	if prefix == "" {
