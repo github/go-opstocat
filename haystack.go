@@ -9,6 +9,7 @@ import (
 	"hash"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -18,8 +19,14 @@ type HaystackReporter struct {
 	hash     hash.Hash
 }
 
-func NewHaystackReporter(endpoint, hostname string) *HaystackReporter {
-	return &HaystackReporter{endpoint, hostname, md5.New()}
+func NewHaystackReporter(config *Configuration) (*HaystackReporter, error) {
+	endpoint, err := url.Parse(config.HaystackEndpoint)
+	if err {
+		return nil, err
+	}
+
+	endpoint.User = url.UserPassword(config.HaystackUser, config.HaystackPassword)
+	return &HaystackReporter{endpoint.String(), config.Hostname, md5.New()}, nil
 }
 
 func (r *HaystackReporter) Report(err error, data grohl.Data) error {

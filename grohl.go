@@ -24,7 +24,12 @@ func SetupLogger(config ConfigWrapper) {
 	grohl.CurrentStatter = PrefixedStatter(innerconfig.App, grohl.CurrentStatter)
 
 	if len(innerconfig.HaystackEndpoint) > 0 {
-		grohl.CurrentContext.ExceptionReporter = NewHaystackReporter(innerconfig.HaystackEndpoint, innerconfig.Hostname)
+		reporter, err := NewHaystackReporter(innerconfig)
+		if err != nil {
+			grohl.Report(err, grohl.Data{"haystack_enpdoint": innerconfig.HaystackEndpoint})
+		} else {
+			grohl.CurrentContext.ExceptionReporter = reporter
+		}
 	}
 
 	grohl.AddContext("app", innerconfig.App)

@@ -20,7 +20,9 @@ type Configuration struct {
 	LogFile          string `json:"APP_LOG_FILE"`
 	StatsDAddress    string `json:"STATSD"`
 	ForceStats       string `json:"FORCE_STATS"`
-	HaystackEndpoint string `json:"FAILBOT_HAYSTACK_URL"`
+	HaystackUser     string `json:"FAILBOT_USERNAME"`
+	HaystackPassword string `json:"FAILBOT_PASSWORD"`
+	HaystackEndpoint string `json:"FAILBOT_URL"`
 	SyslogAddr       string `json:"SYSLOG_ADDR"`
 	Sha              string
 	Hostname         string
