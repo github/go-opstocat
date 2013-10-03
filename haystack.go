@@ -21,7 +21,7 @@ type HaystackReporter struct {
 
 func NewHaystackReporter(config *Configuration) (*HaystackReporter, error) {
 	endpoint, err := url.Parse(config.HaystackEndpoint)
-	if err {
+	if err != nil {
 		return nil, err
 	}
 
