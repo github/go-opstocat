@@ -37,6 +37,10 @@ func (r *HaystackReporter) Report(err error, data grohl.Data) error {
 
 	marshal, _ := json.Marshal(data)
 	res, reporterr := http.Post(r.Endpoint, "application/json", bytes.NewBuffer(marshal))
+	if res != nil {
+		defer res.Body.Close()
+	}
+
 	if reporterr != nil || res.StatusCode != 201 {
 		delete(data, "backtrace")
 		delete(data, "host")
