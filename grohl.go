@@ -28,7 +28,7 @@ func SetupLogger(config ConfigWrapper) {
 		if err != nil {
 			grohl.Report(err, grohl.Data{"haystack_enpdoint": innerconfig.HaystackEndpoint})
 		} else {
-			grohl.CurrentContext.ExceptionReporter = reporter
+			grohl.SetErrorReporter(reporter)
 		}
 	}
 
