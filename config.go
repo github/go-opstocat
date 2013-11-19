@@ -132,6 +132,8 @@ func currentGitSha() (sha string) {
 	if len(sha) == 0 {
 		sha = simpleExec("git", "rev-parse", "HEAD")
 	}
+
+	return
 }
 
 func simpleExec(name string, arg ...string) string {
