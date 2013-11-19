@@ -39,7 +39,7 @@ func NewConfiguration(workingdir string) *Configuration {
 		Env:           "",
 		LogFile:       "",
 		AppConfigPath: filepath.Join(workingdir, ".app-config"),
-		Sha:           simpleExec("git", "rev-parse", "HEAD"),
+		Sha:           currentGitSha(),
 		PidPath:       filepath.Join(workingdir, "tmp", "pids"),
 		Hostname:      simpleExec("hostname", "-s"),
 	}
@@ -125,6 +125,15 @@ func readAppConfigs(file *os.File, configs []interface{}) error {
 		}
 	}
 	return nil
+}
+
+func currentGitSha() (sha string) {
+	sha = os.Getenv("GIT_SHA")
+	if len(sha) == 0 {
+		sha = simpleExec("git", "rev-parse", "HEAD")
+	}
+
+	return
 }
 
 func simpleExec(name string, arg ...string) string {
