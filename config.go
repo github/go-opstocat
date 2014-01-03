@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var environments = []string{"test", "development", "staging", "production"}
+var environments = []string{"test", "development", "staging", "production", "enterprise"}
 
 type Configuration struct {
 	App              string
