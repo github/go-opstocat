@@ -3,6 +3,7 @@ package opstocat
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,7 +40,7 @@ func NewConfiguration(workingdir string) *Configuration {
 		Env:           "",
 		LogFile:       "",
 		AppConfigPath: filepath.Join(workingdir, ".app-config"),
-		Sha:           simpleExec("git", "rev-parse", "HEAD"),
+		Sha:           currentSha(workingdir),
 		PidPath:       filepath.Join(workingdir, "tmp", "pids"),
 		Hostname:      simpleExec("hostname", "-s"),
 	}
@@ -133,5 +134,19 @@ func simpleExec(name string, arg ...string) string {
 		panic(err)
 	}
 
+	return trim(output)
+}
+
+func currentSha(wd string) string {
+	output, err := ioutil.ReadFile(filepath.Join(wd, "SHA1"))
+
+	if err != nil {
+		return simpleExec("git", "rev-parse", "HEAD")
+	} else {
+		return trim(output)
+	}
+}
+
+func trim(output []byte) string {
 	return strings.Trim(string(output), " \n")
 }
