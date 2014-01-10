@@ -3,6 +3,7 @@ package opstocat
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 	"strings"
 )
 
-var environments = []string{"test", "development", "staging", "production"}
+var environments = []string{"test", "development", "staging", "production", "enterprise"}
 
 type Configuration struct {
 	App              string
@@ -39,7 +40,7 @@ func NewConfiguration(workingdir string) *Configuration {
 		Env:           "",
 		LogFile:       "",
 		AppConfigPath: filepath.Join(workingdir, ".app-config"),
-		Sha:           simpleExec("git", "rev-parse", "HEAD"),
+		Sha:           currentSha(workingdir),
 		PidPath:       filepath.Join(workingdir, "tmp", "pids"),
 		Hostname:      simpleExec("hostname", "-s"),
 	}
@@ -133,5 +134,26 @@ func simpleExec(name string, arg ...string) string {
 		panic(err)
 	}
 
+	return trim(output)
+}
+
+func currentSha(wd string) (sha string) {
+	sha = os.Getenv("GIT_SHA")
+	if len(sha) != 0 {
+		return
+	}
+
+	output, err := ioutil.ReadFile(filepath.Join(wd, "SHA1"))
+
+	if err != nil {
+		sha = simpleExec("git", "rev-parse", "HEAD")
+	} else {
+		sha = trim(output)
+	}
+
+	return
+}
+
+func trim(output []byte) string {
 	return strings.Trim(string(output), " \n")
 }
