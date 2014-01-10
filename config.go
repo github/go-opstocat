@@ -137,14 +137,21 @@ func simpleExec(name string, arg ...string) string {
 	return trim(output)
 }
 
-func currentSha(wd string) string {
+func currentSha(wd string) (sha string) {
+	sha = os.Getenv("GIT_SHA")
+	if len(sha) != 0 {
+		return
+	}
+
 	output, err := ioutil.ReadFile(filepath.Join(wd, "SHA1"))
 
 	if err != nil {
-		return simpleExec("git", "rev-parse", "HEAD")
+		sha = simpleExec("git", "rev-parse", "HEAD")
 	} else {
-		return trim(output)
+		sha = trim(output)
 	}
+
+	return
 }
 
 func trim(output []byte) string {
