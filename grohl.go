@@ -5,8 +5,8 @@ import (
 	"github.com/peterbourgon/g2s"
 	"github.com/technoweenie/grohl"
 	"log/syslog"
+	"net/url"
 	"runtime"
-	"strings"
 	"time"
 )
 
@@ -38,13 +38,9 @@ func SetupLogger(config ConfigWrapper) {
 
 	var logger grohl.Logger
 	if len(innerconfig.SyslogAddr) > 0 {
-		parts := strings.Split(innerconfig.SyslogAddr, ":")
-		writer, err := syslog.Dial(parts[0], parts[1], syslog.LOG_INFO|syslog.LOG_LOCAL7, innerconfig.App)
+		writer, err := newSyslogWriter(innerconfig.SyslogAddr, innerconfig.App)
 		if err == nil {
 			logger = grohl.NewIoLogger(writer)
-		} else {
-			grohl.Report(err, grohl.Data{"syslog_network": parts[0], "syslog_addr": parts[1]})
-			fmt.Printf("Error opening syslog connection: %s\n", err)
 		}
 	}
 
@@ -53,6 +49,31 @@ func SetupLogger(config ConfigWrapper) {
 	}
 
 	go grohl.Watch(logger, logch)
+}
+
+func newSyslogWriter(configAddr, tag string) (*syslog.Writer, error) {
+	net, addr, err := parseAddr(configAddr)
+	if err != nil {
+		return nil, err
+	}
+	writer, err := syslog.Dial(net, addr, syslog.LOG_INFO|syslog.LOG_LOCAL7, tag)
+	if err != nil {
+		grohl.Report(err, grohl.Data{"syslog_network": net, "syslog_addr": addr})
+		fmt.Printf("Error opening syslog connection: %s\n", err)
+	}
+	return writer, err
+}
+
+func parseAddr(s string) (string, string, error) {
+	u, err := url.Parse(s)
+	if err != nil {
+		return "", "", err
+	}
+
+	if u.Host == "" {
+		return u.Scheme, u.Path, nil
+	}
+	return u.Scheme, u.Host, nil
 }
 
 func SendPeriodicStats(duration string, config ConfigWrapper, callback func(keyprefix string)) error {
