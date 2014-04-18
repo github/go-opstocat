@@ -17,8 +17,12 @@ func SetupLogger(config ConfigWrapper) {
 	grohl.SetLogger(chlogger)
 
 	if len(innerconfig.StatsDAddress) > 0 {
-		statter, _ := g2s.Dial("udp", innerconfig.StatsDAddress)
-		grohl.CurrentStatter = statter
+		if innerconfig.StatsDAddress == "noop" {
+			grohl.CurrentStatter = &NoOpStatter{}
+		} else {
+			statter, _ := g2s.Dial("udp", innerconfig.StatsDAddress)
+			grohl.CurrentStatter = statter
+		}
 	}
 
 	grohl.CurrentStatter = PrefixedStatter(innerconfig.App, grohl.CurrentStatter)
@@ -130,3 +134,9 @@ func (s *PrefixStatter) Timing(sampleRate float32, bucket string, d ...time.Dura
 func (s *PrefixStatter) Gauge(sampleRate float32, bucket string, value ...string) {
 	s.Statter.Gauge(sampleRate, fmt.Sprintf("%s.%s", s.Prefix, bucket), value...)
 }
+
+type NoOpStatter struct{}
+
+func (s *NoOpStatter) Counter(sampleRate float32, bucket string, n ...int)          {}
+func (s *NoOpStatter) Timing(sampleRate float32, bucket string, d ...time.Duration) {}
+func (s *NoOpStatter) Gauge(sampleRate float32, bucket string, value ...string)     {}
