@@ -47,7 +47,7 @@ func NewConfiguration(workingdir string) *Configuration {
 }
 
 func (c *Configuration) ShowPeriodicStats() bool {
-	return len(c.StatsDAddress) > 0 || c.ForceStats == "1"
+	return (len(c.StatsDAddress) > 0 && c.StatsDAddress != "noop") || c.ForceStats == "1"
 }
 
 // Fill out the app config from values in the environment.  The env keys are
