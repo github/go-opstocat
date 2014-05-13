@@ -105,11 +105,10 @@ func readAppConfig(config ConfigWrapper, appconfig string) error {
 
 	defer file.Close()
 	err = readAppConfigs(file, []interface{}{config, config.OpstocatConfiguration()})
-	if err == nil {
-		fmt.Printf("Reading app config %s\n", appconfig)
-	} else {
-		fmt.Printf("Error reading app config %s\n", appconfig)
-		panic(err)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading app config %s\n", appconfig)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 
 	return err

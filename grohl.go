@@ -6,6 +6,7 @@ import (
 	"github.com/technoweenie/grohl"
 	"log/syslog"
 	"net/url"
+	"os"
 	"runtime"
 	"time"
 )
@@ -63,7 +64,7 @@ func newSyslogWriter(configAddr, tag string) (*syslog.Writer, error) {
 	writer, err := syslog.Dial(net, addr, syslog.LOG_INFO|syslog.LOG_LOCAL7, tag)
 	if err != nil {
 		grohl.Report(err, grohl.Data{"syslog_network": net, "syslog_addr": addr})
-		fmt.Printf("Error opening syslog connection: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Error opening syslog connection: %s\n", err)
 	}
 	return writer, err
 }
