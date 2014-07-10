@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/binary"
 	"io"
 	"time"
@@ -56,11 +56,10 @@ func (s *StatsdSignedWriter) signedPayload(p []byte) ([]byte, error) {
 	payload.Write(p)
 
 	payloadBytes := payload.Bytes()
-	mac := hmac.New(sha1.New, s.Key)
+	mac := hmac.New(sha256.New, s.Key)
 	mac.Write(payloadBytes)
 
 	fullMessage := mac.Sum(nil)
 	fullMessage = append(fullMessage, payloadBytes...)
 	return fullMessage, nil
 }
-

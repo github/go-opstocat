@@ -3,7 +3,7 @@ package opstocat
 import (
 	"bytes"
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha256"
 	"testing"
 )
 
@@ -19,14 +19,14 @@ func TestSignedWriterSignsPayloads(t *testing.T) {
 	}
 
 	signedBytes := buf.Bytes()
-	if len(signedBytes) != 20+8+4+3 {
-		// signature (20) + timestamp(8) + nonce(4) + message(3)
-		t.Fatalf("Expected 33 bytes to be written to the underlying, but %v were written", len(signedBytes))
+	if len(signedBytes) != 32+8+4+3 {
+		// signature (32) + timestamp(8) + nonce(4) + message(3)
+		t.Fatalf("Expected 47 bytes to be written to the underlying, but %v were written", len(signedBytes))
 	}
-	hmacBytes := signedBytes[0:20]
-	payload := signedBytes[20:]
+	hmacBytes := signedBytes[0:32]
+	payload := signedBytes[32:]
 
-	mac := hmac.New(sha1.New, signedBuf.Key)
+	mac := hmac.New(sha256.New, signedBuf.Key)
 	mac.Write(payload)
 	if bytes.Compare(mac.Sum(nil), hmacBytes) != 0 {
 		t.Fatalf("HMAC did not match up")
