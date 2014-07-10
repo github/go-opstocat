@@ -1,0 +1,3 @@
+script/bootstrap
+script/fmt
+GOPATH="`pwd`/.vendor" go test ./...
