@@ -21,8 +21,13 @@ func SetupLogger(config ConfigWrapper) {
 		if innerconfig.StatsDAddress == "noop" {
 			grohl.CurrentStatter = &NoOpStatter{}
 		} else {
-			statter, _ := g2s.Dial("udp", innerconfig.StatsDAddress)
-			grohl.CurrentStatter = statter
+			statter, err := g2s.Dial("udp", innerconfig.StatsDAddress)
+			if err != nil {
+				grohl.Report(err, grohl.Data{"statsd_address": innerconfig.StatsDAddress})
+				grohl.CurrentStatter = &NoOpStatter{}
+			} else {
+				grohl.CurrentStatter = statter
+			}
 		}
 	}
 
