@@ -107,9 +107,15 @@ func SendPeriodicStats(duration string, config ConfigWrapper, callback func(keyp
 }
 
 func sendPeriodicStats(dur time.Duration, keyprefix string, callback func(keyprefix string)) {
+	var memStats runtime.MemStats
 	for {
 		time.Sleep(dur)
 		grohl.Gauge(1.0, keyprefix+"goroutines", grohl.Format(runtime.NumGoroutine()))
+
+		runtime.ReadMemStats(&memStats)
+		grohl.Gauge(1.0, keyprefix+"memory.alloc", grohl.Format(memStats.Alloc))
+		grohl.Gauge(1.0, keyprefix+"memory.sys", grohl.Format(memStats.Sys))
+
 		callback(keyprefix)
 	}
 }
