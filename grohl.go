@@ -108,6 +108,8 @@ func SendPeriodicStats(duration string, config ConfigWrapper, callback func(keyp
 
 func sendPeriodicStats(dur time.Duration, keyprefix string, callback func(keyprefix string)) {
 	var memStats runtime.MemStats
+	var lastGcCount uint32
+
 	for {
 		time.Sleep(dur)
 		grohl.Gauge(1.0, keyprefix+"goroutines", grohl.Format(runtime.NumGoroutine()))
@@ -117,6 +119,24 @@ func sendPeriodicStats(dur time.Duration, keyprefix string, callback func(keypre
 		grohl.Gauge(1.0, keyprefix+"memory.heap", grohl.Format(memStats.HeapAlloc))
 		grohl.Gauge(1.0, keyprefix+"memory.stack", grohl.Format(memStats.StackInuse))
 		grohl.Gauge(1.0, keyprefix+"memory.sys", grohl.Format(memStats.Sys))
+
+		// Number of GCs since the last sample
+		countGc := memStats.NumGC - lastGcCount
+		grohl.Gauge(1.0, keyprefix+"memory.gc")
+
+		if countGc > 0 {
+			if countGc > 256 {
+				countGc = 256
+			}
+
+			for i := uint32(0); i < countGc; i++ {
+				idx := ((memStats.NumGC - i) + 255) % 256
+				pause := time.Duration(memStats.PauseNs[idx])
+				grohl.Timing(1.0, keyprefix+"memory.gc_pause", pause)
+			}
+		}
+
+		lastGcCount = memStats.NumGC
 
 		callback(keyprefix)
 	}
