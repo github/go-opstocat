@@ -116,8 +116,8 @@ func sendPeriodicStats(dur time.Duration, keyprefix string, callback func(keypre
 
 		runtime.ReadMemStats(&memStats)
 		grohl.Gauge(1.0, keyprefix+"memory.alloc", grohl.Format(memStats.Alloc))
-		grohl.Gauge(1.0, keyprefix+"memory.mallocs", grohl.Format(memStats.Mallocs))
-		grohl.Gauge(1.0, keyprefix+"memory.frees", grohl.Format(memStats.Frees))
+		grohl.Counter(1.0, keyprefix+"memory.mallocs", int(memStats.Mallocs))
+		grohl.Counter(1.0, keyprefix+"memory.frees", int(memStats.Frees))
 		grohl.Gauge(1.0, keyprefix+"memory.heap", grohl.Format(memStats.HeapAlloc))
 		grohl.Gauge(1.0, keyprefix+"memory.heap_in_use", grohl.Format(memStats.HeapInuse))
 		grohl.Gauge(1.0, keyprefix+"memory.heap_idle", grohl.Format(memStats.HeapIdle))
