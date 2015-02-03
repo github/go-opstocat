@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/technoweenie/grohl"
-	"hash"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,7 +15,6 @@ import (
 type HaystackReporter struct {
 	Endpoint string
 	Hostname string
-	hash     hash.Hash
 }
 
 func NewHaystackReporter(config *Configuration) (*HaystackReporter, error) {
@@ -26,7 +24,7 @@ func NewHaystackReporter(config *Configuration) (*HaystackReporter, error) {
 	}
 
 	endpoint.User = url.UserPassword(config.HaystackUser, config.HaystackPassword)
-	return &HaystackReporter{endpoint.String(), config.Hostname, md5.New()}, nil
+	return &HaystackReporter{Endpoint: endpoint.String(), Hostname: config.Hostname}, nil
 }
 
 func (r *HaystackReporter) Report(err error, data grohl.Data) error {
@@ -55,7 +53,7 @@ func (r *HaystackReporter) Report(err error, data grohl.Data) error {
 }
 
 func (r *HaystackReporter) rollup(data grohl.Data, firstline string) string {
-	r.hash.Reset()
-	io.WriteString(r.hash, fmt.Sprintf("%s:%s:%s", data["ns"], data["fn"], firstline))
-	return fmt.Sprintf("%x", r.hash.Sum(nil))
+	hash := md5.New()
+	io.WriteString(hash, fmt.Sprintf("%s:%s:%s", data["ns"], data["fn"], firstline))
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }
