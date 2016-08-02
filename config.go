@@ -36,9 +36,6 @@ type ConfigWrapper interface {
 
 func NewConfiguration(workingdir string) *Configuration {
 	return &Configuration{
-		App:           "",
-		Env:           "",
-		LogFile:       "",
 		AppConfigPath: filepath.Join(workingdir, ".app-config"),
 		Sha:           currentSha(workingdir),
 		PidPath:       filepath.Join(workingdir, "tmp", "pids"),
