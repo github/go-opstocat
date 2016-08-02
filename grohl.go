@@ -49,9 +49,16 @@ func SetupLogger(config ConfigWrapper) {
 	var logger grohl.Logger
 	if len(innerconfig.SyslogAddr) > 0 {
 		writer, err := newSyslogWriter(innerconfig.SyslogAddr, innerconfig.App)
-		if err == nil {
-			logger = grohl.NewIoLogger(writer)
+		if err != nil {
+			grohl.Report(err, grohl.Data{"syslog": innerconfig.SyslogAddr})
 		}
+		logger = grohl.NewIoLogger(writer)
+	} else if len(innerconfig.LogFile) > 0 {
+		file, err := os.OpenFile(innerconfig.LogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0755)
+		if err != nil {
+			grohl.Report(err, grohl.Data{"log_file": innerconfig.LogFile})
+		}
+		logger = grohl.NewIoLogger(file)
 	}
 
 	if logger == nil {
