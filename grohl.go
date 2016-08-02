@@ -52,7 +52,6 @@ func SetupLogger(config ConfigWrapper) {
 		if err != nil {
 			grohl.Report(err, grohl.Data{"syslog": innerconfig.SyslogAddr})
 		} else {
-
 			logger = grohl.NewIoLogger(writer)
 		}
 	} else if len(innerconfig.LogFile) > 0 {
